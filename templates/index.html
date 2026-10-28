@@ -23,6 +23,10 @@
     .event h3 { margin: 0 0 10px; font-size: 1.17rem; }
     .event p:last-child { margin: 0; color: var(--muted); line-height: 1.55; }
     footer { margin-top: 30px; color: var(--muted); font-size: .9rem; }
+    .resources { margin-top: 28px; padding: 22px; background: white; border: 1px solid var(--line); border-radius: 16px; }
+    .resources img { display: block; width: 100%; max-width: 640px; margin-top: 18px; border-radius: 12px; }
+    .announcement { white-space: pre-wrap; line-height: 1.6; }
+    a { color: var(--blue); }
     @media (max-width: 560px) { header { padding-top: 38px; padding-bottom: 38px; } .section-head { display: block; } .section-head p { margin-top: 7px; } }
   </style>
 </head>
@@ -46,7 +50,13 @@
       </article>
       {% endfor %}
     </div>
-    <footer>Built for learning cloud deployment and continuous delivery.</footer>
+    <section class="resources" aria-labelledby="resources-title">
+      <h2 id="resources-title">Campus noticeboard</h2>
+      <p class="announcement">{{ announcement }}</p>
+      <a href="{{ url_for('resource', name='announcement.txt') }}">Read the announcement</a>
+      <img src="{{ url_for('resource', name='poster.svg') }}" alt="CampusConnect poster: Learn, build and share at the campus tech festival" width="640" height="280">
+    </section>
+    <footer>Campus events, announcements and resources in one place.</footer>
   </main>
 </body>
 </html>

@@ -14,6 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN useradd --create-home appuser
 COPY --chown=appuser:appuser app.py .
 COPY --chown=appuser:appuser templates/ ./templates/
+COPY --chown=appuser:appuser sample-assets/ ./sample-assets/
 USER appuser
 
 EXPOSE 8080

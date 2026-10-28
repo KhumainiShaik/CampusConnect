@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="280" viewBox="0 0 640 280" role="img" aria-labelledby="title desc">
+  <title id="title">CampusConnect tech festival</title>
+  <desc id="desc">Learn, build and share at the campus tech festival.</desc>
+  <rect width="640" height="280" rx="20" fill="#153a86"/>
+  <circle cx="590" cy="40" r="110" fill="#2873ce"/>
+  <circle cx="620" cy="260" r="85" fill="#2458c6"/>
+  <text x="36" y="64" font-family="sans-serif" font-size="18" fill="#c7dcff">CAMPUS TECH FESTIVAL</text>
+  <text x="36" y="128" font-family="sans-serif" font-size="44" font-weight="bold" fill="white">CampusConnect</text>
+  <text x="36" y="184" font-family="sans-serif" font-size="26" fill="white">Learn. Build. Share.</text>
+  <text x="36" y="232" font-family="sans-serif" font-size="16" fill="#c7dcff">Workshops / Hackathons / Robotics / Coding</text>
+</svg>
