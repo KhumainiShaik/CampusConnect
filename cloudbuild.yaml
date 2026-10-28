@@ -1,0 +1,52 @@
+# GCP-native alternative to GitHub Actions. BUILD_ID is available for manual
+# `gcloud builds submit` as well as trigger-started builds.
+substitutions:
+  _REGION: asia-south1
+  _REPOSITORY: campusconnect
+  _IMAGE_NAME: campusconnect
+  _SERVICE_NAME: campusconnect
+  _RUNTIME_SERVICE_ACCOUNT: ''
+  _STORAGE_BUCKET: ''
+
+steps:
+  - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
+    id: Validate application configuration
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        if [[ -z "${_RUNTIME_SERVICE_ACCOUNT}" || -z "${_STORAGE_BUCKET}" ]]; then
+          echo "Set _RUNTIME_SERVICE_ACCOUNT and _STORAGE_BUCKET before submitting this build." >&2
+          exit 1
+        fi
+  - name: gcr.io/cloud-builders/docker
+    id: Build image
+    args:
+      - build
+      - -f
+      - Dockerfile.optimised
+      - -t
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:$BUILD_ID'
+      - .
+  - name: gcr.io/cloud-builders/docker
+    id: Push image
+    args:
+      - push
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:$BUILD_ID'
+  - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
+    id: Deploy to Cloud Run
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - '${_SERVICE_NAME}'
+      - '--image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:$BUILD_ID'
+      - '--region=${_REGION}'
+      - '--allow-unauthenticated'
+      - '--quiet'
+      - '--service-account=${_RUNTIME_SERVICE_ACCOUNT}'
+      - '--update-env-vars=STORAGE_BUCKET=${_STORAGE_BUCKET}'
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE_NAME}:$BUILD_ID'
+options:
+  logging: CLOUD_LOGGING_ONLY
