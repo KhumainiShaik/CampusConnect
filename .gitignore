@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.log
 .env
+.env.*
 .DS_Store
 gha-creds-*.json
 *.zip

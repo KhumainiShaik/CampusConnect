@@ -1,0 +1,15 @@
+.gcloudignore
+.git/
+.github/
+#!include:.gitignore
+docs/
+tests/
+test/
+*.md
+*.mmd
+*.docx
+*.pptx
+*.zip
+CI:CD/
+setup-team.sh
+.dockerignore.example

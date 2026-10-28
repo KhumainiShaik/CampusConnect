@@ -24,4 +24,3 @@ def health():
 @app.get("/api/events")
 def api_events():
     return jsonify(EVENTS)
-    
