@@ -1,0 +1,29 @@
+name: 07 - Authenticated cloud connection
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: asia-south1
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Authenticate through Workload Identity Federation
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+      - name: List the existing Cloud Run services
+        run: gcloud run services list --project="$PROJECT_ID" --region="$REGION" --quiet

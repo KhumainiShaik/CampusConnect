@@ -1,0 +1,18 @@
+name: 03 - Jobs and dependencies
+on: workflow_dispatch
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate the example event count
+        run: python3 -c "assert 4 > 0, 'There must be at least one event'"
+
+  report:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create the report after validation
+        run: echo "The example event count passed validation" > report.txt
+      - name: Display the report
+        run: cat report.txt

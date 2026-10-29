@@ -1,0 +1,36 @@
+name: 08 - Build and publish an image
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: asia-south1
+      REPOSITORY: campusconnect
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+      - name: Prepare the image address
+        run: echo "IMAGE_URI=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/campusconnect:${GITHUB_SHA}" >> "$GITHUB_ENV"
+      - name: Build the image
+        run: docker build --platform linux/amd64 -f Dockerfile.optimised -t "$IMAGE_URI" .
+      - name: Configure registry authentication
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+      - name: Push the image
+        run: docker push "$IMAGE_URI"

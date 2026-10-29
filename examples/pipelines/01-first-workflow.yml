@@ -1,0 +1,8 @@
+name: 01 - First workflow
+on: workflow_dispatch
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "The runner executed my first command"

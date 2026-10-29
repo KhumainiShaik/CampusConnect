@@ -1,0 +1,19 @@
+name: 06 - Cloud CLI without authentication
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: asia-south1
+    steps:
+      - name: Install Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+      - name: Check the installed tool
+        run: gcloud version
+      - name: Try a cloud request without credentials
+        run: gcloud run services list --project="$PROJECT_ID" --region="$REGION" --quiet

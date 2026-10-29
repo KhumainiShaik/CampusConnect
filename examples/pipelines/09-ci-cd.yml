@@ -1,0 +1,79 @@
+name: CampusConnect CI/CD
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: campusconnect-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+  deploy:
+    name: Build and deploy
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.GCP_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: asia-south1
+      REPOSITORY: campusconnect
+      SERVICE: campusconnect
+      RUNTIME_SA: ${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}
+      STORAGE_BUCKET: ${{ vars.GCP_STORAGE_BUCKET }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+      - name: Validate deployment settings
+        run: |
+          : "${PROJECT_ID:?Set GCP_PROJECT_ID}"
+          : "${RUNTIME_SA:?Set GCP_RUNTIME_SERVICE_ACCOUNT}"
+          : "${STORAGE_BUCKET:?Set GCP_STORAGE_BUCKET}"
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+      - name: Prepare the image address
+        run: echo "IMAGE_URI=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/campusconnect:${GITHUB_SHA}" >> "$GITHUB_ENV"
+      - name: Build the image
+        run: docker build --platform linux/amd64 -f Dockerfile.optimised -t "$IMAGE_URI" .
+      - name: Configure registry authentication
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+      - name: Push the image
+        run: docker push "$IMAGE_URI"
+      - name: Deploy the new revision
+        run: |
+          gcloud run deploy "$SERVICE" \
+            --image "$IMAGE_URI" --project="$PROJECT_ID" \
+            --region="$REGION" --port=8080 \
+            --service-account="$RUNTIME_SA" \
+            --update-env-vars="STORAGE_BUCKET=${STORAGE_BUCKET}" \
+            --allow-unauthenticated --quiet
+      - name: Show service URL
+        run: gcloud run services describe "$SERVICE" --project="$PROJECT_ID" --region="$REGION" --format='value(status.url)'

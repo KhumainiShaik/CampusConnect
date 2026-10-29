@@ -1,0 +1,22 @@
+name: 04 - Variables
+on: workflow_dispatch
+
+env:
+  APP_NAME: CampusConnect
+
+jobs:
+  settings:
+    runs-on: ubuntu-latest
+    env:
+      DEMO_MESSAGE: ${{ vars.DEMO_MESSAGE }}
+    steps:
+      - name: Read workflow and repository values
+        run: |
+          echo "Application: $APP_NAME"
+          echo "Repository setting: $DEMO_MESSAGE"
+          echo "Commit: $GITHUB_SHA"
+      - name: Prepare a value for a later step
+        run: echo "RELEASE_LABEL=demo-${GITHUB_SHA}" >> "$GITHUB_ENV"
+      - name: Read the prepared value
+        run: |
+          echo "Release label: $RELEASE_LABEL"

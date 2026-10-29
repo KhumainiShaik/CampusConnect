@@ -1,0 +1,13 @@
+name: 02 - Steps in one job
+on: workflow_dispatch
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create a report
+        run: echo "CampusConnect has four sample events" > report.txt
+      - name: Read the report
+        run: cat report.txt
+      - name: Check the report
+        run: grep -q "four sample events" report.txt
